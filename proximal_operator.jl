@@ -18,7 +18,7 @@ end
 # proxBnorm; see Li (2018) page 8, Liu (2010) page 
 function proxBnorm(v::Vector{T}, lambda2::T) where T <: AbstractFloat
     # finding z
-    zhat = rose(multB(v))
+    zhat = rose(v)
     lambda2_max = norm(zhat, Inf)
     if lambda2 >= lambda2_max
         z = zhat
@@ -50,7 +50,7 @@ function proxgroup(x::Vector{T}, lambda1::T, lambda2::T, group::Vector{Int64}, w
         eta = soft_thresholding(x_l, lambda1)
 
         if (norm(eta) > lambda2 * w_l[l])
-            y[@view(group[:,1]) .== l] = eta
+            y[@view(group[:,1]) .== l] = eta * (1 - lambda2 * w_l[l]/norm(eta))
         else
             y[@view(group[:,1]) .== l] .= 0
         end

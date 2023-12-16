@@ -1,13 +1,13 @@
 ## Functions from proximal operators
 include("basics.jl")
-include("proximal operator.jl")
+include("proximal_operator.jl")
 
 # moreau envelope of sparse group Lasso
 function sparsegroupMoreau(x::Vector{T}, lambda1::T, lambda2::T, group::Vector{Int64}, w_l::Vector{T}) where T <: AbstractFloat
     argmin = proxgroup(x, lambda1, lambda2, group, w_l)
     pbetak = 0
     for l in 1:maximum(group)
-        pbetak += w_l[l] * norm(argmin[@view(group[:,1]) .== l], 1)
+        pbetak += w_l[l] * norm(argmin[@view(group[:,1]) .== l])
     end
     pbetak *= lambda2
 

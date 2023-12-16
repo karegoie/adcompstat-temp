@@ -1,6 +1,6 @@
 ## Semismooth Newton
 include("basics.jl")
-include("proximal operator.jl")
+include("proximal_operator.jl")
 include("derivation.jl")
 include("genJaco.jl")
 
@@ -15,12 +15,11 @@ function sparsegroupstep(u::Vector{T}, f::Vector{T}, d::Vector{T}, X::AbstractMa
     uPsi = sparsegroupPsi(u, X, Y, lambda, w_1, w_2, betak, yk, sigmak, tauk, group, w_l)
     dotd = dot(f, d)
 
-    while (sparsegroupPsi(u + alphaj .* d, X, Y, lambda, w_1, w_2, betak, yk, sigmak, tauk, group, w_l) > uPsi + mu * alphaj * dotd)
+    while (sparsegroupPsi(u .+ alphaj .* d, X, Y, lambda, w_1, w_2, betak, yk, sigmak, tauk, group, w_l) > uPsi + mu * alphaj * dotd)
         alphaj *= rho
     end
 
     return alphaj
-
 end
 
 ## for sparse group lasso
@@ -36,7 +35,8 @@ function sparsegroupSSN(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w
     # hyperparameters
     eta = 0.5
     varrho = 0.5
-    tol = 1e-7
+    tol = 1e-5
+    #tol = 2e-2
 
     # Initialize
     u = zeros(N)
@@ -45,8 +45,10 @@ function sparsegroupSSN(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w
 
     while norm(f) > tol
         println("j: ", j)
+        println("norm(f): ", norm(f))
         # step 1
         H = sparsegroupgenJaco(u, X, lambda, w_1, w_2, betak, yk, sigmak, tauk, group, w_l)
+        println("norm(H): ", norm(H))
         d = H \ (-f)
 
         if (norm(H*d + f) > minimum([eta, norm(f)^(1+varrho)]))
@@ -103,7 +105,7 @@ function fusedSSN(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w_2::T,
     # hyperparameters
     eta = 0.5
     varrho = 0.5
-    tol = 1e-7
+    tol = 1e-3
 
     # Initialize
     u = zeros(N)
@@ -113,7 +115,9 @@ function fusedSSN(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w_2::T,
     while norm(f) > tol
         # step 1
         println("j: ", j)
+        println("norm(f): ", norm(f))
         H = fusedgenJaco(u, X, lambda, w_1, w_2, betak, yk, sigmak, tauk)
+        println("norm(H): ", norm(H))
         d = H \ (-f)
 
         if (norm(H*d + f) > minimum([eta, norm(f)^(1+varrho)]))

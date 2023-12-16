@@ -1,6 +1,6 @@
 ## proximal point algorithm
 include("basics.jl")
-include("proximal operator.jl")
+include("proximal_operator.jl")
 include("derivation.jl")
 include("genJaco.jl")
 include("semismoothnewton.jl")
@@ -54,8 +54,8 @@ end
 function sparsegroupterminate(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w_2::T, betak::Vector{T}, betaklag::Vector{T}, iter, time_elapsed, group, w_l) where T <: AbstractFloat
 
     # hyperparameters
-    tol  = 1e-7
-    maxiter = 20
+    tol  = 1e-4
+    maxiter = 2000
     maxtime = Minute(5)
 
     # initialize
@@ -64,7 +64,7 @@ function sparsegroupterminate(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1
 
     if norm(residual) > tol
         barbeta = transpose(X) * residual ./ norm(residual)
-        delta_kkt = norm(betak - proxgroup(betak - barbeta, lambda * w_1, lambda * w_2, group, w_l))
+        delta_kkt = norm(betak - proxgroup(betak - barbeta, lambda * w_1, lambda * w_2, group, w_l)) / (1 + norm(betak) + norm(barbeta))
         if (delta_kkt < tol)
             println("Delta KKT:", delta_kkt)
             flag = false
@@ -135,8 +135,9 @@ end
 function fusedterminate(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w_2::T, betak::Vector{T}, betaklag::Vector{T}, iter, time_elapsed) where T <: AbstractFloat
 
     # hyperparameters
-    tol  = 1e-7
-    maxiter = 20
+    #tol  = 1e-7
+    tol = 1e-4
+    maxiter = 20000
     maxtime = Minute(5)
 
     # initialize
@@ -145,7 +146,7 @@ function fusedterminate(X::AbstractMatrix{T}, Y::Vector{T}, lambda::T, w_1::T, w
 
     if norm(residual) > tol
         barbeta = transpose(X) * residual ./ norm(residual)
-        delta_kkt = norm(betak - proxfused(betak - barbeta, lambda * w_1, lambda * w_2))
+        delta_kkt = norm(betak - proxfused(betak - barbeta, lambda * w_1, lambda * w_2)) / (1 + norm(betak) + norm(barbeta))
         if (delta_kkt < tol)
             println("Delta KKT:", delta_kkt)
             flag = false

@@ -1,6 +1,6 @@
 ## generalized Jacobian
 include("basics.jl")
-include("proximal operator.jl")
+include("proximal_operator.jl")
 include("derivation.jl")
 
 # matrix u
@@ -76,7 +76,7 @@ function Bmap(Z::AbstractMatrix{T}) where T <: AbstractFloat
     output = zeros(N, (n+1))
     for i in 1:N
         output[i, 1] = Z[i, 1]
-        output[i, 2:n] .= @view(Z[i, 1:(n-1)]) - @view(Z[i, 2:n])
+        output[i, 2:n] .= @view(Z[i, 2:n]) - @view(Z[i, 1:(n-1)])
         output[i, n+1] = -Z[i, n] 
     end
     return output

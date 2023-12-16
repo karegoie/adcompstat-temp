@@ -28,7 +28,7 @@ end
 
 # find BB^t with size n
 function BBt(n)
-    bbt = tridiagonal(zeros(n, n))
+    bbt = Tridiagonal(zeros(n, n))
     bbt[1,1] = 2
     bbt[1,2] = -1
     for i in 2:(n-1)
@@ -86,24 +86,24 @@ end
 # rose algorithm
 function rose(x::Vector{T}) where T <: AbstractFloat
     u = multB(x)
-    n = length(u) + 1
-    zhat = zeros(length(x))
+    nm1 = length(u)
+    zhat = zeros(nm1)
 
     # step 1
     s = 0
-    for j in 1:(n-1)
+    for j in 1:(nm1)
         s += j * u[j]
     end
-    s = -s./n
+    s = -s./(nm1 + 1)
 
     # step 2
-    zhat[n-1] = u[n-1] + s
-    for j in (n-2):-1:1
+    zhat[nm1] = u[nm1] + s
+    for j in (nm1-1):-1:1
         zhat[j] = zhat[j+1] + u[j]
     end
 
     # step 3
-    for j in 2:(n-1)
+    for j in 2:(nm1)
         zhat[j] += zhat[j-1]
     end
     
@@ -114,8 +114,12 @@ end
 function sfa(v::Vector{T}, lambda2::T, z0::Vector{T}, maxiter) where T <: AbstractFloat
     L = 2 - 2 * cos(pi * (length(v) - 1)/ length(v))
     for i in 1:maxiter
+        zprev = z0
         g = multBBt(z0) .- multB(v)
         z0 = interval_project(z0 - g/L, lambda2)
+        if (norm(zprev - z0) < 1e-4)
+            break
+        end
     end
     return z0
 end
